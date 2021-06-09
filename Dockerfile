@@ -1,0 +1,41 @@
+FROM ubuntu:18.04
+
+
+ 
+#RUN pip --no-cache-dir install -r requirements.txt \
+#    && chmod 777 app.py /openPose/run_mod.py
+
+WORKDIR /app
+COPY . /app
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y python3.6 \
+ python3.6-dev \
+ curl \
+ libgl1-mesa-glx \
+ python3.6-distutils \
+ python-pip \
+ wget \
+ ffmpeg \
+ git \
+ libnginx-mod-http-geoip \
+ nginx \
+ python3-opencv \
+ build-essential \
+ libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime swig \
+ && update-alternatives --install /usr/bin/python python /usr/bin/python3.6 10 \
+ && curl https://bootstrap.pypa.io/get-pip.py | python3.6 - --user \
+ && pip --no-cache-dir install -r requirements.txt \
+ && pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.14.0-cp36-cp36m-linux_x86_64.whl \
+ && cd / \
+ && git clone https://github.com/PintuBeast/openPose.git \
+ && export LLVM_CONFIG=/usr/bin/llvm-config-7 \
+ && pip install -r openPose/requirements.txt \
+ && bash /openPose/models/graph/cmu/download.sh \
+ && cd /openPose/tf_pose/pafprocess \
+ && swig -python -c++ pafprocess.i && python setup.py build_ext --inplace \
+ && chmod 777 /openPose/run_mod.py /app/app.py /app/ /openPose/output/ /openPose/videos/ /openPose/images/ \
+ && apt-get clean
+
+
+WORKDIR /app
+EXPOSE 5000
